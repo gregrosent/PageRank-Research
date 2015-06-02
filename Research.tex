@@ -16,99 +16,200 @@
 
 \section{New Random Edge Weights at Each Iteration}
 
-Define the PageRank iteration $\vitr x {k+1} =\alpha (P+Q_k)\vitr x k + (1-\alpha)v$, where each $Q_k$ is independently drawn from the probability distribution function $f$, and the other variables are defined as usual. We require that $f$ be defined such that $P+Q_k$ is always a valid PageRank matrix. For example, $P$ and $P+Q_k$ must be column stochastic, so the elements of any column of $Q_k$ must sum to zero. Furthermore, without loss of generality, assume that $\E f = 0$. (If $\E f$ was not zero, we could redefine $P$ to be $P+\E f$ and $f$ to be $f-\E f$.)
+Define the PageRank iteration $\vitr x {k+1} =\alpha (P+Q_k)\vitr x k
++ (1-\alpha)v$, where each $Q_k$ is independently drawn from the
+probability distribution function $f$, and the other variables are
+defined as usual. We require that $f$ be defined such that $P+Q_k$ is
+always a valid PageRank matrix. For example, $P$ and $P+Q_k$ must be
+column stochastic, so the elements of any column of $Q_k$ must sum to
+zero. Furthermore, without loss of generality, assume that $\E f =
+0$. (If $\E f$ was not zero, we could redefine $P$ to be $P+\E f$ and
+$f$ to be $f-\E f$.)
 
-By the linearity of expectation, $\E {\vitr x {k+1}} = \alpha P \E{\vitr x k} + (1-\alpha)v$, and of course $\E {\vitr x 0} = \vitr x 0$, so computing $\E {\vitr x {k+1}}$ is equivalent to a traditional PageRank problem without randomness. Determining the likely accuracy of this iteration is more complicated. (Note: To ease notation, I use $y = \vitr x {k+1}$ and $x = \vitr x k$ for the rest of this section.)
+By the linearity of expectation, $\E {\vitr x {k+1}} = \alpha P
+\E{\vitr x k} + (1-\alpha)v$, and of course $\E {\vitr x 0} = \vitr x
+0$, so computing $\E {\vitr x {k+1}}$ is equivalent to a traditional
+PageRank problem without randomness. Determining the likely accuracy
+of this iteration is more complicated. (Note: To ease notation, I use
+$y = \vitr x {k+1}$ and $x = \vitr x k$ for the rest of this section.)
 My first attempt was to compute $\Var{\| y\|_2}$, as follows:
 
 \begin{align*}
-\Var{\|y\|} &= \E{\|y\|^2}-\E{\|y\|}^2\\
-&= \E{\sum_{i=1}^n y_i^2}-\E{\|y\|}^2\\
-&= \left(\sum_{i=1}^n \E{y_i^2}\right)-\E{\|y\|}^2
+\Var{\|y\|} &= \E{\|y\|^2}-\E{\|y\|}^2\\ &= \E{\sum_{i=1}^n
+  y_i^2}-\E{\|y\|}^2\\ &= \left(\sum_{i=1}^n
+\E{y_i^2}\right)-\E{\|y\|}^2
 \end{align*}
 
-I don't know how to compute the last term, but knowing $\E{y_i^2}$ would allow us to compute $\Var{y_i}$, since $\Var{y_i}=\E{y_i^2}-\E{y_i}^2$, and we know how to compute $\E{y_i}$. More generally, I derived an algorithm for computing $\E{yy^T}$ given $\E{xx^T}$. (This allows us to recursively compute $\E{yy^T}$.) We can read the expected values of the squares of the elements of $y$ off the diagonal of this matrix. Furthermore, $\E{yy^T}-\E{y}\E{y}^T$ is the covariance matrix of the elements of $y$, since $\left(\E{yy^T}-\E{y}\E{y}^T\right)_{i,j}=\E{y_iy_j}-\E{y_i}\E{y_j}=\Cov{y_i}{y_j}$.
+I don't know how to compute the last term, but knowing $\E{y_i^2}$
+would allow us to compute $\Var{y_i}$, since
+$\Var{y_i}=\E{y_i^2}-\E{y_i}^2$, and we know how to compute
+$\E{y_i}$. More generally, I derived an algorithm for computing
+$\E{yy^T}$ given $\E{xx^T}$. (This allows us to recursively compute
+$\E{yy^T}$.) We can read the expected values of the squares of the
+elements of $y$ off the diagonal of this matrix. Furthermore,
+$\E{yy^T}-\E{y}\E{y}^T$ is the covariance matrix of the elements of
+$y$, since
+$\left(\E{yy^T}-\E{y}\E{y}^T\right)_{i,j}=\E{y_iy_j}-\E{y_i}\E{y_j}=\Cov{y_i}{y_j}$.
 
-Suppose we're given $Q$, and let $A=P+Q$, so $y=\alpha Ax + (1-\alpha)v$. Then,
+Suppose we're given $Q$, and let $A=P+Q$, so $y=\alpha Ax +
+(1-\alpha)v$. Then,
 
 \begin{align*}
-\E{y y^T \mid Q} &= \E{\left(\alpha Ax+(1-\alpha)v\right) \left(\alpha x^T A^T+(1-\alpha)v^T\right) \mid Q} \\
-&= \alpha^2 A\E{x x^T}A^T + \alpha(1-\alpha)(A \E x v^T + v {\E x}^T A^T )+ (1-\alpha)^2 vv^T
+\E{y y^T \mid Q} &= \E{\left(\alpha Ax+(1-\alpha)v\right) \left(\alpha
+  x^T A^T+(1-\alpha)v^T\right) \mid Q} \\ &= \alpha^2 A\E{x x^T}A^T +
+\alpha(1-\alpha)(A \E x v^T + v {\E x}^T A^T )+ (1-\alpha)^2 vv^T
 \end{align*}
 
 Since $\E Q = 0$ and $\E A = \E P + \E Q = P$, we have the following:
 
 \begin{align*}
-\E{yy^T} = \alpha^2 P\E{xx^T}P^T + \alpha^2 \E{Q\E{xx^T}Q^T} + \alpha(1-\alpha)(P \E x v^T + v {\E x}^T P^T )+ (1-\alpha)^2 vv^T
+\E{yy^T} = \alpha^2 P\E{xx^T}P^T + \alpha^2 \E{Q\E{xx^T}Q^T} +
+\alpha(1-\alpha)(P \E x v^T + v {\E x}^T P^T )+ (1-\alpha)^2 vv^T
 \end{align*}
 
-Since we know $\E x$ and $\E{xx^T}$, the only term we don't know is $\E{Q\E{xx^T}Q^T}$. For all integers $q,r,s,t$ from $1$ to $n$, let $c_{q,r,s,t} = \Cov{f_{q,r}}{f_{s,t}} = \E{f_{q,r}f_{s,t}}-\E{f_{q,r}}\E{f_{s,t}}=\E{f_{q,r}f_{s,t}}$, the covariance of two elements of the output of $f$. (These values can be precomputed before any iterations of this algorithm.) Then $(Q\E{xx^T}Q^T)_{q,s} = Q_{q,:}\E{xx^T}(Q_{s,:})^T = \sum_{r,t=1}^n Q_{q,r}\E{xx_T}_{r,t}Q_{s,t}$, and its expected value is $\sum_{r,t=1}^n c_{q,r,s,t}\E{xx^T}_{r,t}$. The entire matrix $\E{Q\E{xx^T}Q^T}$ can be computed by iterating over $r$ and $t$ from $1$ to $n$.
+Since we know $\E x$ and $\E{xx^T}$, the only term we don't know is
+$\E{Q\E{xx^T}Q^T}$. For all integers $q,r,s,t$ from $1$ to $n$, let
+$c_{q,r,s,t} = \Cov{f_{q,r}}{f_{s,t}} =
+\E{f_{q,r}f_{s,t}}-\E{f_{q,r}}\E{f_{s,t}}=\E{f_{q,r}f_{s,t}}$, the
+covariance of two elements of the output of $f$. (These values can be
+precomputed before any iterations of this algorithm.) Then
+$(Q\E{xx^T}Q^T)_{q,s} = Q_{q,:}\E{xx^T}(Q_{s,:})^T = \sum_{r,t=1}^n
+Q_{q,r}\E{xx_T}_{r,t}Q_{s,t}$, and its expected value is
+$\sum_{r,t=1}^n c_{q,r,s,t}\E{xx^T}_{r,t}$. The entire matrix
+$\E{Q\E{xx^T}Q^T}$ can be computed by iterating over $r$ and $t$ from
+$1$ to $n$.
 
-Some remaining problems include finding a closed form for this algorithm, and/or an approximation algorithm that makes it easier to understand how the variance of $f$ results in variance in the PageRank vector, especially as $k$ becomes large. I decided to hold off on that for now in case what I've done so far is on the wrong track.
+Some remaining problems include finding a closed form for this
+algorithm, and/or an approximation algorithm that makes it easier to
+understand how the variance of $f$ results in variance in the PageRank
+vector, especially as $k$ becomes large. I decided to hold off on that
+for now in case what I've done so far is on the wrong track.
 
 \section{Approximations Regarding Random Edge Weights in a Direct Solution}
 
-Suppose we have a PageRank Problem $Mx=b$, but now we add randomness, so we try to solve $(M-E)x_e = b$, where $E$ is random and has expected value 0. Assume that $E$ is small enough so that $(M-E)^{-1} = \sum_{k=0}^\infty \inv M (E\inv M)^k$. If $E$ is guaranteed to be sufficiently small, then $\inv{(M-E)} \approx \inv M + \inv M E \inv M$. ($\inv M E\inv M E\inv M$ is a good estimate of the error of this first order approximation, for sufficiently small $E$.) This allows us to approximate the effect of randomness on the solution:
+Suppose we have a PageRank Problem $Mx=b$, but now we add randomness,
+so we try to solve $(M-E)x_e = b$, where $E$ is random and has
+expected value 0. Assume that $E$ is small enough so that $(M-E)^{-1}
+= \sum_{k=0}^\infty \inv M (E\inv M)^k$. If $E$ is guaranteed to be
+sufficiently small, then $\inv{(M-E)} \approx \inv M + \inv M E \inv
+M$. ($\inv M E\inv M E\inv M$ is a good estimate of the error of this
+first order approximation, for sufficiently small $E$.) This allows us
+to approximate the effect of randomness on the solution:
 
 \begin{align*}
-x_e - x &= \inv{(M-E)}b - x\\
-&= \inv{(M-E)}Mx - x\\
-&= \left(\inv{(M-E)}M-I\right)x\\
-&\approx \left((\inv M + \inv M E \inv M)M-I\right)x\\
-&= (I + \inv M E - I)x\\
-&= \inv M E x
+x_e - x &= \inv{(M-E)}b - x\\ &= \inv{(M-E)}Mx - x\\ &=
+\left(\inv{(M-E)}M-I\right)x\\ &\approx \left((\inv M + \inv M E \inv
+M)M-I\right)x\\ &= (I + \inv M E - I)x\\ &= \inv M E x
 \end{align*}
 
-It follows that $\E{x_e-x}\approx\inv M \E E x=0$, and also, $\E{\inv{(M-E)}}\approx \inv M + \inv M \E E \inv M = \inv M$. Regardless of the approximation used, knowing $\E{(M-E)^{-1}}$ allows us to find the expected solution of the PageRank problem, since $\E{(M-E)^{-1}b}=\E{(M-E)^{-1}}b$. If instead we want a second order approximation of $\inv{(M-E)}$, we can compute its expected value as follows:
+It follows that $\E{x_e-x}\approx\inv M \E E x=0$, and also,
+$\E{\inv{(M-E)}}\approx \inv M + \inv M \E E \inv M = \inv
+M$. Regardless of the approximation used, knowing $\E{(M-E)^{-1}}$
+allows us to find the expected solution of the PageRank problem, since
+$\E{(M-E)^{-1}b}=\E{(M-E)^{-1}}b$. If instead we want a second order
+approximation of $\inv{(M-E)}$, we can compute its expected value as
+follows:
 
 \begin{align*}
-\E{\inv{(M-E)}} &\approx \E{\inv M + \inv M E \inv M + \inv M E \inv M E \inv M} \\
-&= \inv M + \inv M \E{E\inv M E} \inv M
+\E{\inv{(M-E)}} &\approx \E{\inv M + \inv M E \inv M + \inv M E \inv M
+  E \inv M} \\ &= \inv M + \inv M \E{E\inv M E} \inv M
 \end{align*}
 
-$\E{E\inv M E}$ depends on the covariances of the elements of $E$, and can be computed in a manner similar to that in the last paragraph of the previous section. Similarly, a third-order approximation also depends on $\inv M \E{E \inv M E \inv M E} \inv M$, which depends on the expected values of products of three elements of $E$. The same pattern holds for higher-order approximations.
+$\E{E\inv M E}$ depends on the covariances of the elements of $E$, and
+can be computed in a manner similar to that in the last paragraph of
+the previous section. Similarly, a third-order approximation also
+depends on $\inv M \E{E \inv M E \inv M E} \inv M$, which depends on
+the expected values of products of three elements of $E$. The same
+pattern holds for higher-order approximations.
 
-The variance of the first-order approximation of $\inv{(M-E)}$ is $\Var{\inv M + \inv M E \inv M} = \Var{\inv M E \inv M} = \E{({\inv M E \inv M})^2}-\E{\inv M E \inv M}^2 = \E{\inv M E M^{-2} E \inv M}-0^2 = \inv M \E{EM^{-2}E}\inv M$, which depends on the covariances of the elements of $E$. The variance of the second-order approximation can be computed as follows:
+The variance of the first-order approximation of $\inv{(M-E)}$ is
+$\Var{\inv M + \inv M E \inv M} = \Var{\inv M E \inv M} = \E{({\inv M
+    E \inv M})^2}-\E{\inv M E \inv M}^2 = \E{\inv M E M^{-2} E \inv
+  M}-0^2 = \inv M \E{EM^{-2}E}\inv M$, which depends on the
+covariances of the elements of $E$. The variance of the second-order
+approximation can be computed as follows:
 
 \begin{align*}
-\Var{\cdot} &= \Var{\inv M + \inv M E \inv M + \inv M E \inv M E \inv M} \\
-&= \Var{\inv M E \inv M + \inv M E \inv M E \inv M}\\
-&= M^{-2} \Var{E+E\inv M E} M^{-2}\\
-&= M^{-2} \left(\E{(E+E\inv M E)^2}-\E{E+E\inv ME}^2\right)M^{-2}\\
-&= M^{-2} \left(\E{E^2}+\E{E^2\inv M E}+\E{E\inv ME^2}+\E{E\inv M E^2\inv M E} - \E{E\inv M E}^2\right) M^{-2}
+\Var{\cdot} &= \Var{\inv M + \inv M E \inv M + \inv M E \inv M E \inv
+  M} \\ &= \Var{\inv M E \inv M + \inv M E \inv M E \inv M}\\ &=
+M^{-2} \Var{E+E\inv M E} M^{-2}\\ &= M^{-2} \left(\E{(E+E\inv M
+  E)^2}-\E{E+E\inv ME}^2\right)M^{-2}\\ &= M^{-2}
+\left(\E{E^2}+\E{E^2\inv M E}+\E{E\inv ME^2}+\E{E\inv M E^2\inv M E} -
+\E{E\inv M E}^2\right) M^{-2}
 \end{align*}
 
-If the $k$th order approximation of $(M-E)^{-1}$ is $\sum_{i=0}^k (\inv M E)^i \inv M$, then its error is $\sum_{i=k+1}^\infty (\inv M E)^i \inv M = (\inv M E)^{k+1} \sum_{i=0}^\infty (\inv M E)^i \inv M = (\inv M E)^{k+1}(M-E)^{-1}$. We can bound the relative error of this approximation as follows:
+If the $k$th order approximation of $(M-E)^{-1}$ is $\sum_{i=0}^k
+(\inv M E)^i \inv M$, then its error is $\sum_{i=k+1}^\infty (\inv M
+E)^i \inv M = (\inv M E)^{k+1} \sum_{i=0}^\infty (\inv M E)^i \inv M =
+(\inv M E)^{k+1}(M-E)^{-1}$. We can bound the relative error of this
+approximation as follows:
 
-%The error in the first-order approximation is $\sum_{i=2}^\infty (\inv M E)^i \inv M = (\inv M E)^2\sum_{i=0}^\infty (\inv M E)^i \inv M = \inv M E \inv M E \inv{(M-E)}$. We can bound the relative error of this approximation as follows:
+%The error in the first-order approximation is $\sum_{i=2}^\infty
+%(\inv M E)^i \inv M = (\inv M E)^2\sum_{i=0}^\infty (\inv M E)^i \inv
+%M = \inv M E \inv M E \inv{(M-E)}$. We can bound the relative error
+%of this approximation as follows:
 
 \begin{align*}
-\frac{\|(\inv M E)^{k+1}\inv{(M-E)}\|}{\|\inv{(M-E)}\|} &\leq \frac{(\|\inv M\|\| E\|)^{k+1}\|(M-E)^{-1}\|}{\|(M-E)^{-1}\|} \\
-&= (\|\inv M\|\|E\|)^{k+1}
+\frac{\|(\inv M E)^{k+1}\inv{(M-E)}\|}{\|\inv{(M-E)}\|} &\leq
+\frac{(\|\inv M\|\| E\|)^{k+1}\|(M-E)^{-1}\|}{\|(M-E)^{-1}\|} \\ &=
+(\|\inv M\|\|E\|)^{k+1}
 \end{align*}
 
-If $M=I-\alpha P$, then $\|\inv M\| = \|\sum_{k=0}^\infty (\alpha P)^k\| \leq \sum_{k=0}^\infty (\alpha\| P\|)^k = \frac 1 {1-\alpha\|P\|}$, so $(\|\inv M\|\|E\|)^{k+1} \leq \left(\frac{\|E\|}{1-\alpha\|P\|}\right)^{k+1}$. Since the $P$ is column stochastic in the PageRank problem, it's 1-norm is 1, so the relative error in the 1-norm is bounded by $\left(\frac{\|E\|_1}{1-\alpha}\right)^{k+1}$.
+If $M=I-\alpha P$, then $\|\inv M\| = \|\sum_{k=0}^\infty (\alpha
+P)^k\| \leq \sum_{k=0}^\infty (\alpha\| P\|)^k = \frac 1
+{1-\alpha\|P\|}$, so $(\|\inv M\|\|E\|)^{k+1} \leq
+\left(\frac{\|E\|}{1-\alpha\|P\|}\right)^{k+1}$. Since the $P$ is
+column stochastic in the PageRank problem, it's 1-norm is 1, so the
+relative error in the 1-norm is bounded by
+$\left(\frac{\|E\|_1}{1-\alpha}\right)^{k+1}$.
 
 \section{Miscellaneous Observations}
 
-Most of these observations don't seem useful at the moment, but it seemed like a good idea to keep them in case they prove useful later.
+Most of these observations don't seem useful at the moment, but it
+seemed like a good idea to keep them in case they prove useful later.
 
-The Sherman Morrison Woodbury formula gives $\inv{(M+E)}=\inv M-\inv M\inv{(\inv E+\inv M)}\inv M$, which looks similar to the first order approximation for $(M+E)^{-1}$.
+The Sherman Morrison Woodbury formula gives $\inv{(M+E)}=\inv M-\inv
+M\inv{(\inv E+\inv M)}\inv M$, which looks similar to the first order
+approximation for $(M+E)^{-1}$.
 
-Suppose we have a PageRank iteration $x_{k+1}=\alpha Px_k + (1-\alpha)v$. Let $e_k=x_k-x_*$, where $x_*$ is the fixed point of the iteration. Subtracting the equation $x_* = \alpha P x_* + (1-\alpha)v$ from the original iteration equation yields $e_{k+1}=\alpha P e_k$, so $e_k = (\alpha P)^k e_0$.
+Suppose we have a PageRank iteration $x_{k+1}=\alpha Px_k +
+(1-\alpha)v$. Let $e_k=x_k-x_*$, where $x_*$ is the fixed point of the
+iteration. Subtracting the equation $x_* = \alpha P x_* + (1-\alpha)v$
+from the original iteration equation yields $e_{k+1}=\alpha P e_k$, so
+$e_k = (\alpha P)^k e_0$.
 
-Suppose we have a PageRank iteration $x_{k+1}=\alpha Px_k + (1-\alpha)v$, with initial guess $x_0$. I prove by induction that $x_k = (\alpha P)^k x_0 + (I-(\alpha P)^{k+1})(I-\alpha P)^{-1} (1-\alpha)v$. A simple computation shows this is true for $k=0$. If it's true for $k$, then
+Suppose we have a PageRank iteration $x_{k+1}=\alpha Px_k +
+(1-\alpha)v$, with initial guess $x_0$. I prove by induction that $x_k
+= (\alpha P)^k x_0 + (I-(\alpha P)^{k+1})(I-\alpha P)^{-1}
+(1-\alpha)v$. A simple computation shows this is true for $k=0$. If
+it's true for $k$, then
 
 \begin{align*}
-x_{k+1} &= \alpha Px_k + (1-\alpha)v\\
-&= \alpha P \left((\alpha P)^k x_0 + (I-(\alpha P)^{k+1})(I-\alpha P)^{-1} (1-\alpha)v\right) + (1-\alpha)v\\
-&= (\alpha P)^{k+1}x_0+\left(\alpha P(I-\alpha P)^{-1}-(\alpha P)^{k+1}(I-\alpha P)^{-1} + I\right)(1-\alpha)v\\
-&= (\alpha P)^{k+1}x_0 + (\alpha P - (\alpha P)^{k+1} + I-\alpha P)(I-\alpha P)^{-1}(1-\alpha)v\\
-&= (\alpha P)^{k+1} x_0 + (I-(\alpha P)^{k+2})(I-\alpha P)^{-1} (1-\alpha)v
+x_{k+1} &= \alpha Px_k + (1-\alpha)v\\ &= \alpha P \left((\alpha P)^k
+x_0 + (I-(\alpha P)^{k+1})(I-\alpha P)^{-1} (1-\alpha)v\right) +
+(1-\alpha)v\\ &= (\alpha P)^{k+1}x_0+\left(\alpha P(I-\alpha
+P)^{-1}-(\alpha P)^{k+1}(I-\alpha P)^{-1} + I\right)(1-\alpha)v\\ &=
+(\alpha P)^{k+1}x_0 + (\alpha P - (\alpha P)^{k+1} + I-\alpha
+P)(I-\alpha P)^{-1}(1-\alpha)v\\ &= (\alpha P)^{k+1} x_0 + (I-(\alpha
+P)^{k+2})(I-\alpha P)^{-1} (1-\alpha)v
 \end{align*}
 
-Suppose we have $x=\alpha Px + (1-\alpha)v$. Note that $\inv{(I-\alpha P)} = \sum_{k=0}^\infty (\alpha P)^k = I+\sum_{k=1}^\infty \alpha^k P^k$. Therefore $x=\inv{(I-\alpha P)}(1-\alpha)v = (I+\sum_{k=1}^\infty \alpha^k P^k)(1-\alpha)v = v+\sum_{k=1}^\infty \alpha^k (P^k v -P^{k-1}v) = v+\sum_{k=1}^\infty \alpha^k P^{k-1} (P-I)v = \left( I+\sum_{k=1}^\infty (\alpha^k P^{k-1}) (P-I)\right)v = (I+\alpha(I-\alpha P)^{-1})(P-I)v$.
+Suppose we have $x=\alpha Px + (1-\alpha)v$. Note that $\inv{(I-\alpha
+  P)} = \sum_{k=0}^\infty (\alpha P)^k = I+\sum_{k=1}^\infty \alpha^k
+P^k$. Therefore $x=\inv{(I-\alpha P)}(1-\alpha)v =
+(I+\sum_{k=1}^\infty \alpha^k P^k)(1-\alpha)v = v+\sum_{k=1}^\infty
+\alpha^k (P^k v -P^{k-1}v) = v+\sum_{k=1}^\infty \alpha^k P^{k-1}
+(P-I)v = \left( I+\sum_{k=1}^\infty (\alpha^k P^{k-1}) (P-I)\right)v =
+(I+\alpha(I-\alpha P)^{-1})(P-I)v$.
 
-$(M-E)^{-1} = \inv M + \inv M E (M-E)^{-1}$, so $\E{(M-E)^{-1}} = \inv M + \inv M \E{E(M-E)^{-1}}$. This would be useful if $E$ is drawn from a probability distribution for which $\E{E(M-E)^{-1}}$ is easier to compute than $\E{(M-E)^{-1}}$.
+$(M-E)^{-1} = \inv M + \inv M E (M-E)^{-1}$, so $\E{(M-E)^{-1}} = \inv
+M + \inv M \E{E(M-E)^{-1}}$. This would be useful if $E$ is drawn from
+a probability distribution for which $\E{E(M-E)^{-1}}$ is easier to
+compute than $\E{(M-E)^{-1}}$.
 
+% Demo how to use BibTeX
+\nocite{Constantine:2009:Random}
+\bibliographystyle{siam}
+\bibliography{refs}
+ 
 \end{document}
