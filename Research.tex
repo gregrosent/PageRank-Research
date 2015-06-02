@@ -209,12 +209,14 @@ compute than $\E{(M-E)^{-1}}$.
 
 \section{Small perturbations and concentration results}
 
+% Added by DSB
+
 Suppose we write
 \[
   M = \bar{M} + Z
 \]
-where $\bar{M} = E[M]$ is the mean value of $M$ and $Z$ is a
-perturbation with $E[Z] = 0$.  If we also define $Y = \bar{M}^{-1} Z$,
+where $\bar{M} = \E{M}$ is the mean value of $M$ and $Z$ is a
+perturbation with $\E{Z} = 0$.  If we also define $Y = \bar{M}^{-1} Z$,
 then we have
 \[
   M^{-1} b = (I - Y + R) \bar{M}^{-1} b
@@ -223,25 +225,25 @@ where
 \[
   R = (I+Y)^{-1} Y^2.
 \]
-The relative error in approximating $E[M^{-1} b]$ by $\bar{M}^{-1} b$
+The relative error in approximating $\E{ M^{-1} b }$ by $\bar{M}^{-1} b$
 can be bounded by
 \[
-  \frac{\|E[M^{-1} b-\bar{M}^{-1}b]\|}{\|\bar{M}^{-1} b\|} =
-  \frac{\|E[R] M^{-1} b\|}{\|\bar{M}^{-1} b\|} \leq \|E[R]\|.
+  \frac{\|\E{ M^{-1} b-\bar{M}^{-1}b }\|}{\|\bar{M}^{-1} b\|} =
+  \frac{\|\E{ R } M^{-1} b\|}{\|\bar{M}^{-1} b\|} \leq \|\E{ R }\|.
 \]
 
 If we can establish that $\|Y\| \leq \gamma < 1$ with probability 1,
 then
 \[
-  \|E[R]\| \leq E[\|R\|] \leq
-  E\left[ \frac{\|Y\|^2}{1-\|Y\|} \right] \leq
+  \|\E{R}\| \leq \E{\|R\|} \leq
+  \E{ \frac{\|Y\|^2}{1-\|Y\|} } \leq
   \frac{\gamma^2}{1-\gamma}.
 \]
 The last part of the bound is pessimistic when $\|Y\| \ll \gamma$ most
 of the time.  An alternative bound is to use integration by parts
 to obtain
 \[
-  E\left[ \frac{\|Y\|^2}{1-\|Y\|} \right] =
+  \E{ \frac{\|Y\|^2}{1-\|Y\|} } =
   \int_0^\gamma \frac{2t-t^2}{(1-t)^2} P\{ \|Y\| \geq t \} \, dt,
 \]
 then bound the tail probability $P\{ \|Y\| \geq t \}$.
@@ -255,6 +257,25 @@ fact that even if the edge weights are independent random variables,
 the entries of the matrix $P = AD^{-1}$ become dependent via the
 normalization.  We probably also need to add self-loops to guarantee
 non-singularity.
+
+% Notes from KS:
+%
+% As a general pointer if the matrix norm is smooth then
+% concentration bounds are provided by Pirellis work
+% https://projecteuclid.org/euclid.aop/1176988477
+%
+% Another work on concentration of matrix norms based on the Stein’s
+% type approach is given in http://arxiv.org/pdf/1201.6002.pdf
+%
+% JK suggests these papers feel related at some level, and suggests
+% reference chasing forward from them:
+%
+% From STOC 2001:
+% http://courses.cs.washington.edu/courses/cse522/05au/azar01spectral.pdf 
+%
+% From FOCS 2001:
+% http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.115.4162&rep=rep1&type=pdf 
+
 
 % Demo how to use BibTeX
 \nocite{Constantine:2009:Random}
