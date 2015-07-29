@@ -2,19 +2,32 @@
 
 \usepackage{amsmath}
 
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage{amssymb}
+
 %Probability Commands
 \newcommand \E[1] {\mathrm E \left[#1\right]} %Expected Value
 \newcommand \Var[1] {\mathrm {Var} \left(#1\right)} %Variance
 \newcommand \Cov[2] {\mathrm {Cov} (#1, #2)} %Covariance
+\newcommand \p[1] {\mathrm P \left(#1\right)}
 
 %Matrix Commands
 \newcommand \inv [1] {{#1}^{-1}} %Inverse
-
 \newcommand \vitr [2] {#1^{(#2)}} %An element of a sequence of vectors
+
+%Other
+\DeclareMathOperator{\li}{li}
 
 \begin{document}
 
-\section{New Random Edge Weights at Each Iteration}
+\VerbatimFootnotes
+
+\section{Earlier Material}
+
+This section contains the material that I did after our first meeting this summer. I don't think I've modified it since.
+
+\subsection{New Random Edge Weights at Each Iteration}
 
 Define the PageRank iteration $\vitr x {k+1} =\alpha (P+Q_k)\vitr x k
 + (1-\alpha)v$, where each $Q_k$ is independently drawn from the
@@ -85,7 +98,7 @@ understand how the variance of $f$ results in variance in the PageRank
 vector, especially as $k$ becomes large. I decided to hold off on that
 for now in case what I've done so far is on the wrong track.
 
-\section{Approximations Regarding Random Edge Weights in a Direct Solution}
+\subsection{Approximations Regarding Random Edge Weights in a Direct Solution}
 
 Suppose we have a PageRank Problem $Mx=b$, but now we add randomness,
 so we try to solve $(M-E)x_e = b$, where $E$ is random and has
@@ -144,11 +157,6 @@ E)^i \inv M = (\inv M E)^{k+1} \sum_{i=0}^\infty (\inv M E)^i \inv M =
 (\inv M E)^{k+1}(M-E)^{-1}$. We can bound the relative error of this
 approximation as follows:
 
-%The error in the first-order approximation is $\sum_{i=2}^\infty
-%(\inv M E)^i \inv M = (\inv M E)^2\sum_{i=0}^\infty (\inv M E)^i \inv
-%M = \inv M E \inv M E \inv{(M-E)}$. We can bound the relative error
-%of this approximation as follows:
-
 \begin{align*}
 \frac{\|(\inv M E)^{k+1}\inv{(M-E)}\|}{\|\inv{(M-E)}\|} &\leq
 \frac{(\|\inv M\|\| E\|)^{k+1}\|(M-E)^{-1}\|}{\|(M-E)^{-1}\|} \\ &=
@@ -163,7 +171,7 @@ column stochastic in the PageRank problem, it's 1-norm is 1, so the
 relative error in the 1-norm is bounded by
 $\left(\frac{\|E\|_1}{1-\alpha}\right)^{k+1}$.
 
-\section{Miscellaneous Observations}
+\subsection{Miscellaneous Observations}
 
 Most of these observations don't seem useful at the moment, but it
 seemed like a good idea to keep them in case they prove useful later.
@@ -207,7 +215,7 @@ M + \inv M \E{E(M-E)^{-1}}$. This would be useful if $E$ is drawn from
 a probability distribution for which $\E{E(M-E)^{-1}}$ is easier to
 compute than $\E{(M-E)^{-1}}$.
 
-\section{Small perturbations and concentration results}
+\subsection{Small perturbations and concentration results}
 
 % Added by DSB
 
@@ -281,5 +289,693 @@ non-singularity.
 \nocite{Constantine:2009:Random}
 \bibliographystyle{siam}
 \bibliography{refs}
- 
+
+% Is there concentration of measure bound for the 1-norm of a matrix with independent entries?
+% What if they aren't independent?
+% (Or some other norm)
+% Normalization
+%
+
+\section{Incomplete and/or Off-Track Arguments from June}
+
+These arguments are answering the wrong question, computationally infeasible, or off track in some other way. But there's a small chance I'm wrong, and I put in too much time to want to delete them. I haven't bothered to proofread them extensively.
+
+\subsection{Bounding the CDF of a Normalized Random Edge Weight}
+
+Given a sequence of random edge weights that need to be normalized (to sum to 1), let $X$ be one of them and $Y$ be the sum of the others. Since the edge weights are required to be positive, $X$ and $Y$ are positive random variables.
+
+Let $\overline X = \E X$, $\hat X=X-\overline X$, and define $\overline Y$ and $\hat Y$ similarly. (So $\hat X$ and $\hat Y$ have expected value 0.) Without loss of generality, let $\overline X+\overline Y=1$. (If this isn't the case. we can divide the random variables by their expected sum.) Since $X$ and $Y$ are positive, $0<\frac X{X+Y}<1$. Therefore, if $0<k<1$, then for any $\alpha>0$, using Markov's Inequality,
+
+\begin{align*}
+\p{\frac X{X+Y}<k} &= \p{X<kX+kY}\\
+&= \p{(1-k)X<kY}\\
+&= \p{(1-k)\overline X + (1-k)\hat X < k\overline Y + k\hat Y}\\
+&= \p{(1-k)\overline X - k\overline Y < (k-1)\hat X + k\hat Y}\\
+&= \p{\bar X-k<(k-1)\hat X + k\hat Y}\\
+&\geq \p{\bar X-k<(k-1)\hat X + k\hat Y<\overline X-k+2\alpha}\\
+&= \p{\left|\left((k-1)\hat X + k\hat Y\right)-\left(\overline X-k+\alpha\right)\right|<\alpha}\\
+&= \p{\left(\left((k-1)\hat X + k\hat Y\right)-\left(\overline X-k+\alpha\right)\right)^2<\alpha^2}\\
+&\geq 1-\E{\left(\left((k-1)\hat X + k\hat Y\right)-\left(\overline X-k+\alpha\right)\right)^2}/\alpha^2\\
+&= 1-\frac{\E{\left((k-1)\hat X + k\hat Y\right)^2}}{\alpha^2}-\left(\frac{\overline X-k+\alpha}\alpha\right)^2\\
+&= 1-\frac{(k-1)^2\Var X + 2(k-1)k\Cov X Y + k^2\Var Y}{\alpha^2}-\left(1+\frac{\overline X-k}\alpha\right)^2
+\end{align*}
+
+%http://www.wolframalpha.com/input/?i=maximize+1-a%5E2%2Fx%5E2-%281%2Bb%2Fx%29%5E2+for+x%3E0
+I used Wolfram Alpha to maximize this expression over all $\alpha>0$, with the result that when $k>\overline X$, $\p{\frac X{X+Y}<k}\geq \frac{(k-\overline X)^2}{((k-1)^2\Var X + 2(k-1)k\Cov X Y + k^2\Var Y)^2+(k-\overline X)^2}$. (The link to Wolfram Alpha is a comment in the TEX file.)
+
+\subsection{Bounding the CDF of the L2 Norm of the Error of a Vector of Random Edge Weights}
+
+Let $x$ be a vector of $n$ positive random variables, and $\tilde x=\frac x{\|x\|_1}$. Let $\overline x=\E x$, and (without loss of generality) assume that $\|\overline x\|_1=1$. Then,
+
+\begin{align*}
+\p{\|\overline x-\tilde x\|_2>t} &= \p{\left\|\overline x (\|x\|_1) - x \right\|_2 > t\|x\|_1} \\
+&= \p{\langle \overline x \|x\|_1 - x, \overline x \|x\|_1 - x\rangle>t^2\|x\|_1^2} \\
+&= \p{\|x\|_1^2(\|\overline x\|_2^2-t^2) - 2\|x\|_1\langle x,\overline x\rangle + \|x\|_2^2 > 0} \\
+&= \p{\left(\sum_{i,j=1}^n x_ix_j\right)\left(-t^2+\sum_{k=1}^n \overline x_k^2\right)-2\sum_{i,j=1}^n \overline x_i x_i x_j + \sum_{i=1}^n x_i^2 > 0} \\
+&= \p{\sum_{i,j=1}^n x_ix_j \left( -t^2 + \|\overline x\|_2^2 -2\overline x_i + \mathbf 1_{i=j}\right) > 0}
+\end{align*}
+
+This is a quadratic form on the elements of $x$, so before studying it further I derive some results about quadratic forms in general. Let $A$ be a symmetric matrix, $y$ be a vector of positive random variables whose expected values sum to 1, and $f(y)=y^T A y$. For any $\alpha>0$,
+
+\begin{align*}
+\p{0<f(y)} &\geq \p{0<f(y)<2\alpha} \\
+&= \p{|f(y)-\alpha|<\alpha} \\
+&= \p{(f(y)-\alpha)^2<\alpha^2} \\
+&\geq 1- \E{(f(y)-\alpha)^2}/\alpha^2 \\
+&= -\E{f(y)^2}/\alpha^2 - 2\E{f(y)}/\alpha
+\end{align*}
+
+\subsection{Bounding the CDF of the L1 Norm of the Error of a Vector of Random Edge Weights}
+
+Let $x$ be a random vector of $n$ positive random variables, and $\tilde x=\frac x{\|x\|_1}$. Let $\overline x=\E x$, and (without loss of generality) assume that $\|\overline x\|_1=1$. Observe that $\frac\partial{\partial x_i}\frac{x_i}{\|x\|_1}=\frac{\|x\|_1-x_i}{\|x\|_1^2}$, and for $i\neq j$, $\frac\partial{\partial x_i}\frac{x_j}{\|x\|_1}=\frac{-x_j}{\|x\|_1^2}$. Therefore, the Jacobian matrix for the function $x\rightarrow \tilde x$ at a vector $x$ is $D(x)=\frac 1 {\|x\|_1^2}(\|x\|_1I-diag(x) J)$, where $J$ is the matrix of all ones. I now show that, measured in the 1-norm of the error, $\overline x + D(\overline x)(x-\overline x)$ is a good approximation for $\tilde x$.
+
+$D(\overline x)= I-diag(\overline x) J$, so $\overline x + D(\overline x)(x-\overline x) = x+diag(\overline x) J(x-\overline x)$
+
+\subsection{Reframing the Problem in terms of Exponentially Many Inequalities}
+
+Throughout this section I use the L1 norm. Let $x=[x_1,\ldots,x_n]'$ be a vector of positive random variables with expected value $\overline x$. Let $\tilde x = \frac x {\|x\|}$. Assume $\|\overline x\|=1$.
+
+For some $S\subseteq\{1,\ldots,n\}$, suppose we know that $\tilde x_i>\overline x_i$ if and only if $i\in S$. (This means that $S$ cannot be $\{1,\ldots,n\}$, because then $1=\sum_{i=1}^n \tilde x_i>\sum_{i=1}^n \overline x_i = 1$. A similar argument shows that $S$ cannot be the null set.) Let $T$ be the complement of $S$ in $\{1,\ldots,n\}$. Let $\alpha = \sum_{i\in S} x_i$, let $\overline \alpha = \sum_{i\in S} \overline x_i$, and let $\tilde \alpha = \alpha / \|x\|$.
+
+\begin{align*}
+\|\tilde x-\overline x\| &= \sum_{i=1}^n |\tilde x_i - \overline x_i|  \\
+&= \sum_{i\in S} (\tilde x_i - \overline x_i) + \sum_{i\in T} (\overline x_i - \tilde x_i) \\
+&= \tilde \alpha - \overline \alpha + (1-\overline \alpha) - (1-\tilde \alpha) \\
+&= 2\tilde \alpha - 2\overline \alpha \\
+&= 2\sum_{i\in S} (\tilde x_i - \overline x_i)
+\end{align*}
+
+Let $\beta=\|x\|-\alpha=\sum_{i\in T} x_i$. Then,
+
+\begin{align*}
+\p{\|\tilde x-\overline x\|>\epsilon} &= \p{\tilde\alpha - \overline\alpha > \frac \epsilon 2} \\
+&= \p{\alpha - \overline\alpha\|x\| > \frac \epsilon 2 \|x\|} \\
+&= \p{\alpha -\overline\alpha \alpha - \overline\alpha \beta > \frac\epsilon 2 \alpha + \frac\epsilon 2 \beta} \\
+&= \p{\alpha(\overline\beta - \frac\epsilon 2) > \beta(\overline\alpha + \frac\epsilon 2)} \\
+&= \p{v\cdot x> 0},
+\end{align*}
+
+where $v \in\mathbb R^n$, $v_i = \overline\beta - \frac\epsilon 2$ if $i\in S$, and $v_i = -\overline\alpha - \frac\epsilon 2$ if $i\in T$.
+
+There are $2^n$ possibilities for the signs of $\tilde x_i - \overline x_i$, and for each combination of signs there is a vector $v$ and corresponding inequality as described above. If I recall correctly, I was able to prove that all such inequalities are satisfied if and only if the inequality corresponding to the signs of the $\tilde x_i - \overline x_i$ is satisfied. Unfortunately, there are exponentially many inequalities and this looks harder than the original problem.
+
+\section{My method for finding the error in the PageRank vector}
+
+\subsection{My Cool Argument (July 9)}
+
+Suppose we have the PageRank equation $x=\alpha A \inv D x + (1-\alpha)v$, where $A$ is random, $D$ is defined so that $A\inv D$ is column stochastic, and $\alpha$ and $v$ are fixed (so $x$ depends on $A$). Let $\overline A=\E A$, and without loss of generality, assume that $\E D=I$ (e.g. $\overline A$ is column stochastic). Let $\overline x$ be the solution to the PageRank equation when $A=\overline A$. For any variable $u$, let $\hat u = u - \overline u$.
+
+We have the following equations:
+\begin{align*}
+x &= \alpha A \inv D x + (1-\alpha)v \\
+\overline x &= \alpha \overline A \overline x + (1-\alpha)v
+\end{align*}
+
+Subtracting them yields,
+\begin{align*}
+\hat x &= \alpha(A\inv D x - \overline A\overline x) \\
+&= \alpha((\overline A+\hat A)(I-\hat D\inv{(I+\hat D)})(\overline x+\hat x) - \overline A\overline x)
+\end{align*}
+
+If we assume that $\hat A$ is small, then $\hat D$ is also small, and we can multiply the above factors and drop the higher order terms, yielding,
+
+\begin{align*}
+\hat x &= \alpha(\overline A\hat x - \overline A\hat D\overline x + \hat A\overline x) \\
+(I-\alpha\overline A)\hat x &= \alpha(\hat A - \overline A\hat D)\overline x \\
+\hat x &= \alpha (I-\alpha\overline A)^{-1} (\hat A - \overline A\hat D)\overline x \\
+\|\hat x\| &\leq \alpha \|(I-\alpha\overline A)^{-1}\| \|(\hat A - \overline A\hat D)\overline x\| \\
+\|\hat x\| &\leq \frac\alpha{1-\alpha} \|(\hat A - \overline A\hat D)\overline x\|
+\end{align*}
+
+Some transition phrase.
+
+\begin{align*}
+((\hat A-\overline A\hat D)\overline x)_i &= \sum_{k=1}^n (\hat A_{i,k} - \overline A_{i,k} \hat D_{k,k}) \overline x_k \\
+&= \sum_{k=1}^n (\hat A_{i,k} - \overline A_{i,k} \sum_{j=1}^n \hat A_{j,k}) \overline x_k \\
+&= \sum_{j,k=1}^n \hat A_{j,k}(1_{j==i}-\overline A_{i,k})\overline x_k
+\end{align*}
+
+Let $e_j$ be the vector with 1 in position $j$ and 0 elsewhere, and let $\overline A_{*,k}$ be the $k$'th column of $\overline A$. The computation above shows that $(\hat A-\overline A\hat D)\overline x = \sum_{j,k=1}^n \hat A_{j,k}(e_j-\overline A_{*,k})\overline x_k$. (Given an ordering of the elements of $\hat A$, I could phrase this in terms of multiplying a fixed $n\times n^2$ matrix by a random $n^2\times 1$ vector, but for the way I proceed right now it's unnecessary.)
+
+Therefore, $\|(\hat A-\overline A\hat D)\overline x)\| \leq \sum_{j,k=1}^n |\hat A_{j,k}|(\|e_j\|+\|\overline A_{*,k}\|)\overline x_k = 2\sum_{k=1}^n \overline x_k \sum_{j=1}^n |\hat A_{j,k}|$, so $\|\hat x\| \leq \frac{2\alpha}{1-\alpha}\sum_{k=1}^n \overline x_k \|\hat A_{*,k}\|$. Using Markov's Inequality, $\p{\|\hat x\|>\delta} \leq \frac{2\alpha}{(1-\alpha)\delta} \sum_{j,k=1}^n \E{|\hat A_{j,k}|}$. Since $\E{|u|} \leq \E{\sqrt{\Var{u}}}$ for any random variable $u$, we can replace absolute values with square roots of variances in the above bound.
+
+Using Markov's Inequality, and the fact that $\E{|u|} \leq \sqrt{\Var{u}}$,
+
+\begin{align*}
+\p{\|\hat x\|>\epsilon} &\leq \p{\frac{1-\alpha}\alpha \epsilon \leq \|(\hat A-\overline A\hat D)\overline x\|} \\
+&\leq \frac 1 \epsilon \frac\alpha{1-\alpha} stuff
+\end{align*}
+
+Another way to continue: Using Markov's Inequality, we have
+
+\begin{align*}
+\p{\|\hat x\| \frac{1-\alpha}\alpha > k} &\leq \p{\|(\hat A - \overline A\hat D)\overline x\| > k} \\
+&\leq \frac 1 k \E{\|(\hat A - \overline A\hat D)\overline x\|} \\
+&= \frac 1 k \sum_{i=1}^n \E {\left| \left((\hat A - \overline A\hat D)\overline x\right)_i \right|} \\
+&= \frac 1 k \sum_{i=1}^n \E{\left| \sum_{j,k=1}^n \hat A_{j,k}(1_{j=i} - \overline A_{i,k})\overline x_k \right|}
+\end{align*}
+
+As a side-note, this also shows that the probability in question is the product of an $n\times n^2$ matrix and a $1\times n^2$ vector representation of $\hat A$. Perhaps this would be useful for a better approximation than the one I derive below.
+
+By Jensen's Inequality\footnote{http://www.stat.cmu.edu/~larry/=stat705/Lecture2.pdf}, for any real  zero-mean random variable $U$, $\Var U = \E{U^2} = \E{|U|^2}\geq \E{|U|}^2$, so $\E{|U|}\leq\sqrt{\Var U}$. Also, by the Cauchy-Schwartz Inequality and Jensen's Inequality\footnote{http://math.stackexchange.com/questions/130773/find-bound-for-sum-of-square-roots}, for any $a\in\mathbb R_+^n$, $\sum_{i=1}^n \sqrt{a_i} \leq \sqrt{n\sum_{i=1}^n a_i}$.Therefore,
+
+\begin{align*}
+\p{\|\hat x\| \frac{1-\alpha}\alpha > k} &\leq \frac 1 k \sum_{i=1}^n \sqrt{\Var{\sum_{j,k=1}^n \hat A_{j,k}(1_{j=i} - \overline A_{i,k})\overline x_k}} \\
+&= \frac 1 k \sum_{i=1}^n \sqrt{\sum_{j,k=1}^n \Var{\hat A_{j,k}}\left((1_{j=i} - \overline A_{i,k})\overline x_k\right)^2} \\
+&\leq \frac 1 k \sqrt{n\sum_{i=1}^n \sum_{j,k=1}^n \Var{\hat A_{j,k}}\left((1_{j=i} - \overline A_{i,k})\overline x_k\right)^2} \\
+&= \frac 1 k \sqrt{n\sum_{j,k=1}^n \left(\Var{\hat A_{j,k}} \overline x_k^2 \sum_{i=1}^n \left(1_{j=i} - \overline A_{i,k}\right)^2\right)} \\
+&= \frac 1 k \sqrt{n\sum_{k=1}^n \left( \overline x_k^2 \sum_{j=1}^n \Var{\hat A_{j,k}} (1-2\overline A_{j,k}+\|\overline A_{*,k}\|_2^2) \right) } \\
+\end{align*}
+
+Or, somehow, I showed I could bound it by $2\sum_{j,k=1}^n |\hat A_{j,k}|\overline x_k$. I should figure out what I meant by that.
+
+\subsection{Eureka Insight July 13 9:30pm}
+
+Suppose we have the PageRank equation $x=\alpha A \inv D x + (1-\alpha)v$, where $A$ has independent, random, nonnegative entries, $D$ is defined so that $A\inv D$ is column stochastic, and $\alpha$ and $v$ are fixed (so $x$ depends on $A$). Let $\overline A=\E A$, and without loss of generality, assume that $\E D=I$ (e.g. $\overline A$ is column stochastic). Let $\overline x$ be the solution to the PageRank equation when $A=\overline A$. For any variable $u$, let $\hat u = u - \overline u$.
+
+We have the following equations:
+\begin{align*}
+x &= \alpha A \inv D x + (1-\alpha)v \\
+\overline x &= \alpha \overline A \overline x + (1-\alpha)v
+\end{align*}
+
+Subtracting them yields,
+\begin{align*}
+\hat x &= \alpha(A\inv D x - \overline A\overline x) \\
+&= \alpha((\overline A+\hat A)(I-\hat D+\hat D^2-\hat D^3\ldots)(\overline x+\hat x) - \overline A\overline x)
+\end{align*}
+
+If we assume that $\hat A$ is small, then $\hat D$ is also small, and we can multiply the above factors and drop the higher order terms, yielding,
+
+\begin{align*}
+\hat x &= \alpha(\overline A\hat x - \overline A\hat D\overline x + \hat A\overline x) \\
+(I-\alpha\overline A)\hat x &= \alpha(\hat A - \overline A\hat D)\overline x \\
+\hat x &= \alpha (I-\alpha\overline A)^{-1} (\hat A - \overline A\hat D)\overline x \\
+\end{align*}
+
+It turns out that $\hat x$ is a linear combination of vectors, where the coefficients are the elements of $\hat A$:
+
+\begin{align*}
+((\hat A-\overline A\hat D)\overline x)_i &= \sum_{k=1}^n (\hat A_{i,k} - \overline A_{i,k} \hat D_{k,k}) \overline x_k \\
+&= \sum_{k=1}^n (\hat A_{i,k} - \overline A_{i,k} \sum_{j=1}^n \hat A_{j,k}) \overline x_k \\
+&= \sum_{j,k=1}^n \hat A_{j,k}(1_{j==i}-\overline A_{i,k})\overline x_k
+\end{align*}
+
+Let $e_j$ be the vector with 1 in position $j$ and 0 elsewhere, and let $\overline A_{*,k}$ be the $k$'th column of $\overline A$. The computation above shows that $(\hat A-\overline A\hat D)\overline x = \sum_{j,k=1}^n \hat A_{j,k}(e_j-\overline A_{*,k})\overline x_k$. (Given an ordering of the elements of $\hat A$, I could phrase this in terms of multiplying a fixed $n\times n^2$ matrix by a random $n^2\times 1$ vector.)
+
+Let $M=(I-\alpha\overline A)^{-1}$. Multiplying both sides by $I-\alpha\overline A$ yields $M-\alpha M\overline A = I$, so $M\overline A = \frac 1 \alpha (M-I)$. Therefore,
+
+\begin{align*}
+\hat x &= \alpha M \sum_{j,k=1}^n \hat A_{j,k}(e_j-\overline A_{*,k})\overline x_k \\
+&= \alpha \sum_{j,k=1}^n \hat A_{j,k} (M_{*,j} - \frac 1 \alpha (M_{*,k} - e_k))\overline x_k \\
+&= \sum_{j,k=1}^n \hat A_{j,k} (\alpha M_{*,j} - M_{*,k} + e_k) \overline x_k
+\end{align*}
+
+This allows us to complete the bound as follows:
+
+\begin{align*}
+\p{\|\hat x\|_2>\delta} &= \p{\sum_{i=1}^n \left(\sum_{j,k=1}^n \hat A_{j,k}(\alpha M_{i,j} - M_{i,k} + e_k) \overline x_k\right)^2 > \delta^2} \\
+&\leq \frac 1 {\delta^2} \sum_{j,k=1}^n \Var{A_{j,k}} \overline x_k^2 \| \alpha M_{*,j} - M_{*,k} + e_k \|_2^2
+\end{align*}
+
+\subsection{My Eureka Argument with Error Analysis}
+
+\begin{align*}
+\hat x &= \alpha(A\inv D x - \overline A\overline x) \\
+(I-\alpha A\inv D)\hat x &= \alpha(A\inv D-\overline A)\overline x \\
+\hat x &= (I-\alpha A\inv D)^{-1} \alpha(A\inv D-\overline A)\overline x \\
+\end{align*}
+
+Let $U=\alpha(\hat A-\overline A\hat D)\inv D$. Note the following equivalent definition of $U$:
+
+\begin{align*}
+U &= \alpha(\hat A\inv D - \overline A\hat D\inv D) \\
+&= \alpha(\hat A(I-\hat D\inv D) - \overline A\hat D\inv D) \\
+&= \alpha(\hat A - \hat A\hat D\inv D - \overline A\hat D\inv D) \\
+&= \alpha(\hat A - A\hat D\inv D)
+\end{align*}
+
+Also note that $A\inv D = A(I-\hat D\inv D) = \overline A + \hat A - A\hat D\inv D = \overline A + U/\alpha$. As before, let $M=(I-\alpha\overline A)^{-1}$. Because $(Y+Z)^{-1}=\inv Y\left(I - Z (Y+Z)^{-1}\right)$, we have:
+
+\begin{align*}
+\hat x &= (I-\alpha\overline A - U)^{-1} U\overline x \\
+&= \alpha M(I+U(I-\alpha A\inv D)^{-1})(\hat A-\overline A\hat D)(I-\hat D\inv D)\overline x \\
+&= \alpha M(\hat A-\overline A\hat D)\overline x + \epsilon
+\end{align*}
+
+where $\epsilon$ is the sum of the higher order terms. Specifically,
+
+\begin{align*}
+\epsilon &= M\left(-U\hat D + U(I-\alpha A\inv D)^{-1}U\right)\overline x \\
+&= MU\left((I-\alpha A\inv D)^{-1}U - \hat D\right)\overline x
+\end{align*}
+
+Let $r_i = \|\hat A_{*,i}\|_1$ and let $r=\|\hat A\|_1=\max_i r_i$. Using the 1-norm,
+\begin{align*}
+\|U_{*,i}\| &\leq \alpha\left(r_i + \|\hat D_{*,i}\|\right)\|\inv D\|_{*,i} \\
+&\leq 2\alpha\frac{r_i}{1-r_i}
+\end{align*}
+
+So $\|U\| \leq 2\alpha \frac{r}{1-r}$. This gives the following bound: %$\|\epsilon\| \leq (\frac 1 {1-\alpha}) (2\alpha \frac{r}{1-r})(r+\frac 1{1-\alpha}2\alpha \frac{r}{1-r}) = \frac{2\alpha r^2\left((1-\alpha)(1-r)+2\alpha r\right)}{(1-\alpha)^2(1-r)^2} = \frac{2ar^2(1-r-\alpha+3\alpha r)}{(1-\alpha)^2(1-r)^2}$. So if we have a bound on $r$, then we have a bound on $\|\epsilon\|$. The bound is likely to be off by egregiously many orders of magnitude, but if $r$ is small it should still be okay.
+
+\begin{align*}
+\|\epsilon\|_1 &\leq \|M\|_1\frac{2\alpha r}{1-r}\sum_i \overline x_i \|(I-\alpha A\inv D)^{-1}U-\hat D\|_{*,i} \\
+&\leq \|M\|_1\frac{2\alpha r}{1-r}\sum_i\overline x_i\left(\frac 1{1-\alpha}\frac{2\alpha r_i}{1-r_i} + r_i\right) \\
+\end{align*}
+
+We can use $\|M\|_1 \leq \frac 1{1-\alpha}$ to obtain a looser and slightly less expensive bound, but we need to compute the column norms of $M$ anyways as described in the previous section, and its easy to compute their maximum.
+
+Suppose we have a bound $\beta$ on $\|\epsilon\|_1$. ($\beta$ will also bound $\|\epsilon\|_2$). Then under the 2-norm, $\p{\|\hat x\| > \delta} = \p{\|\alpha M(\hat A-\overline A\hat D)\overline x + \epsilon)\|>\delta} \leq \p{\|\alpha M(\hat D-\overline A\hat D)\overline x\|>\delta - k}$, which can be computed as in the previous section.
+
+So use conditional probability (in my head). The hard part is finding the probability that $\beta$ is less than some constant.
+
+\section{Bounding $\p{\|(A\inv D - \overline A\inv{\overline D})e_j\|_1}>\delta$}
+
+Let $A$ be the matrix of positive, independent, random edge weights, $\overline A = \E A$, $\hat A = A-\overline A$, and $P=A\inv D$. We want bounds on $P$ vs $\overline A\inv{\overline D}$, specifically 1-norm column differences. Let $x$ be a column of $A$, let $S=\sum_j x_j$, let $\overline x = \E x$, let $\hat x = x-\overline x$, and let $Y=\sum_j |\frac {x_j}S - \frac{\overline x_j}{\overline S}|$. Choose $\epsilon>0$.
+
+\begin{align*}
+\p{Y\geq\delta} &= \p{Y\geq\delta \wedge |\hat S|<\epsilon\overline S} + \p{Y\geq\delta \wedge |\hat S|>\epsilon\overline S} \\
+&\leq \p{\sum_j \left|x_j-\overline x_j S/\overline S \right| \geq \delta S \wedge |\hat S|<\epsilon \overline S} + \p{|\hat S|>\epsilon\overline S} \\
+&\leq \p{\sum_j |\hat x_j| + \epsilon\overline x_j \geq \delta(1-\epsilon)\overline S \wedge |\hat S|<\epsilon\overline S} + \p{|\hat S|>\epsilon\overline S} \\
+&= \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S \wedge |\hat S|<\epsilon\overline S} + \p{|\hat S|>\epsilon\overline S} \\
+&= \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S} - \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S \wedge |\hat S|>\epsilon\overline S} + \p{|\hat S|>\epsilon\overline S}
+\end{align*}
+
+Assume $\epsilon\geq\frac\delta{2+\delta}$. If $|\hat S|>\epsilon\overline S$, then $(\delta-\epsilon-\delta\epsilon)\overline S \leq \epsilon\overline S < |\hat S| \leq \|\hat x\|_1$. Therefore $\p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S \wedge |\hat S|>\epsilon\overline S} = \p{|\hat S|>\epsilon\overline S}$, so $\p{Y\geq\delta} \leq \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S}$. The value of $\epsilon$ that minimizes this bound is clearly the smallest one, which is $\epsilon=\frac\delta{2+\delta}$, and plugging this in yields $\p{Y\geq\delta} \leq \p{\|\hat x\|_1 \geq \frac\delta{2+\delta}\overline S}$.
+
+Alternatively, consider $0<\epsilon<\frac\delta{2+\delta}$. Then we have $\p{Y\geq\delta} \leq \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S} + \p{|\hat S|>\epsilon\overline S}$, and both terms can be bounded with something like Bernstein. (Or in the latter case, if the $x_j$ are unbounded, Chebyshev's Inequality may be the best way to go.) We're only interested in the optimal $\epsilon$ under these conditions if it produces a bound less than the bound on $\p{\|\hat x\|_1 \geq \frac\delta{2+\delta}\overline S}$.
+
+Either way, we need to bound $\p{\|\hat x\|_1>k}$ for some $k>0$. If $x_j$ has standard deviation $\sigma_j$, then $\E{|\hat x_j|} \leq \sigma_j$, and $\Var{|\hat x_j|} = \E{\hat x_j^2}-\E{|\hat x_j|}^2 = \sigma_j^2 - \E{|\hat x_j|}^2 \leq \sigma_j^2$. If we know $\E{|\hat x_j|}$ then we can compute $\Var{|\hat x_j|}$ exactly. If the $x_j$ are bounded, then we can directly apply something like Bernstein to bound $\p{\|\hat x\|_1 \geq k}$.
+
+\subsection{Bounded Edge Weights}
+Suppose that there exist constants $a_i$ and $b_i$ such that $0\leq a_i\leq x_i\leq b_i$ almost surely, for all $i$. Then $\p{|\hat S|>t} \leq 2\exp\left(-\frac{\frac 1 2 t^2}{\sum_j \Var{x_j} + \frac 1 3 M t}\right)$, where $M=\max_i(\max(\overline x_i-a_i),(b_i-\overline x_i))$ is the maximum possible value of $|\hat x_j|$ over all $j$. Also because of Bernstein's Inequality, letting $u_i=|\hat x_i|$, we have $\p{\sum_i u_i > t + \sum_i \overline u_i} \leq \exp\left(-\frac{\frac 1 2 t^2}{\sum_i \Var{u_i} + \frac 1 3 N t}\right)$, where $N=\max_i(\max_{u_i} |\hat u_i|) = \max_i(\max(\overline u_i, \overline x_i-a_i-\overline u_i, b_i-\overline x_i-\overline u_i))$.
+
+Therefore, for $0<\epsilon<\frac\delta{2+\delta}$,
+
+\begin{align*}
+\p{Y>\delta} &\leq \p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S} + \p{|\hat S|>\epsilon\overline S} \\
+&\leq \exp\left(-\frac{\frac 1 2 \left((\delta-\epsilon-\delta\epsilon)\overline S - \sum_i\overline u_i\right)^2}{\sum_i \Var{u_i} + \frac 1 3 N \left((\delta-\epsilon-\delta\epsilon)\overline S - \sum_i\overline u_i\right)}\right) + 2\exp\left(-\frac{\frac 1 2 (\epsilon\overline S)^2}{\sum_j \Var{x_j} + \frac 1 3 M \epsilon\overline S}\right) \\
+\end{align*}
+
+I should use a computer algebra system to optimize this. For $\epsilon = \frac\delta{2+\delta}$,
+
+\begin{align*}
+\p{Y>\delta} &\leq \p{\sum_i \hat u_i > \frac\delta{2+\delta} - \sum_i \overline u_i} \\
+&\leq \exp\left(-\frac{\frac 1 2 ( \frac\delta{2+\delta} - \sum_i \overline u_i)^2}{\sum_i \Var{u_i} + \frac 1 3 N ( \frac\delta{2+\delta} - \sum_i \overline u_i)}\right)
+\end{align*}
+
+\subsection{Unbounded Edge Weights}
+
+If the $x_j$ do not have upper bounds, then we can use Markov or Cantelli, or try to "truncate" the $x_j$ as follows. Let $t=k-\sum_j \E{|\hat x_j|}$, and assume $t>0$.
+
+\begin{align*}
+\p{\|\hat x\|>k} &= \p{\max_i |\hat x_i|<k} \p{\|\hat x\|>k \mid \max_i |\hat x_i|<k} + \p{\max_i |\hat x_i|>k} \\
+&\leq \p{\|\hat x\|>k \mid \max_i |\hat x_i|<k} + \sum_i \p{|\hat x_i|>k} \\
+&\leq \p{\sum_j |\hat x_j|-\E{|\hat x_j|} > t \mid \max_i |\hat x_i|<k} + \frac{\sum_j \Var{x_j}}{k^2} \\
+&\leq \exp\left(\frac{-\frac 1 2 t^2}{\Var{\|\hat x\|}+\frac 13 t^2}\right) + \frac{\sum_j \Var{x_j}}{k^2} \\
+\end{align*}
+
+The last step uses Bernstein's Inequality, and the fact that $\Var{|\hat x_j| \mid |\hat x_j|<k} \leq \Var{|\hat x_j|}$ and $\E{|\hat x_j| \mid |\hat x_j|<k} \leq \E{|\hat x_j|}$. Unfortunately, this estimate is always greater than (and asymptotically approaches as $k$ goes to infinity) $e^{-3/2} \approx .22$. Since $k$ will never actually go to infinity - because of the triangle inequality the largest $k$ we might consider is 2 - this bound will be notably looser than $e^{-3/2}$.
+
+Here's a similar approach that addresses these problems. Chose $m$ such that $0<m<k$, let $u_i=|\hat x_i|$, let $t=k-\sum_i \overline u_i$, and assume $t>0$.
+
+\begin{align*}
+\p{\|\hat x\|>k} &=  \p{\max_i u_i <m} \p{\|\hat x\|>k \mid \max_i u_i<m} + \p{\max_i u_i>m}\p{\|\hat x\|>k \mid \max_i u_i>m} \\
+&\leq \p{\|\hat x\|>k \mid \max_i u_i<m} + \p{\max_i u_i>m} \\
+&\leq \p{\sum_i \hat u_i > t \mid 0\leq u_i\leq m} + \sum_i \p{u_i > m} \\
+&\leq \exp\left(\frac{-\frac 1 2 t^2}{\frac 1 3 m t + \sum_i \Var{u_i}}\right) + \frac{\sum_i \Var{x_i}}{m^2}
+\end{align*}
+
+By setting the first derivative to zero, we can minimize this by solving the following equation for $m$:
+
+\begin{align*}
+\exp\left(\frac{-\frac 1 2 t^2}{\frac 1 3 m t + \sum_i \Var{u_i}}\right)\left(-\frac 1 2 t^2\right)\log\left({\frac 1 3 m t + \sum_i \Var{u_i}}\right)\frac 1 3 t - 2 \frac{\sum_i \Var{x_i}}{m^3} = 0
+\end{align*}
+
+I don't think this equation has a closed form solution, and I should run some experiments to see if it is an effective bound under some circumstances.
+
+\section{Bounding $\E{\|(A\inv D - \overline A\inv{\overline D})e_j\|_1}$ by Integrating Tail Bounds}
+
+I use the same variable definitions as in the previous section. $0\leq Y\leq 2$ because of the triangle inequality, so $\overline Y = \int_{\delta=0}^\infty \p{Y > \delta} d\delta = \int_{\delta=0}^2 \p{Y>\delta}d\delta$. The problem then becomes to find the tightest bound on $\p{Y>\delta}$, for all $\delta$ between 0 and 2, or possibly a simple but sufficiently tight bound.
+
+One concern is the lack of a closed form bound on $\p{\|\hat x\|>k}$, which means integrating it would require numerical methods, at which point it may be just as easy to solve the whole original problem by Monte Carlo simulations.
+
+\subsection{An Example (Maybe should be deleted)}
+
+Assume $\overline S=1$. Let $k=\sum_j \sigma_j$, and $u=\frac{2k}{1-k}$. $\p{\|\hat x\|\geq\frac\delta{2+\delta}} \leq (1+\frac 2 \delta)k$. Assume $u < 2$, i.e. $k<1/2$.
+
+\begin{align*}
+\E{Y} &= \int_0^2 \p{Y > \delta} d\delta \\
+&\leq \int_0^2 \p{\|\hat x\|_1>\frac\delta{2+\delta}} d\delta \\
+&\leq \int_0^u d\delta + \int_u^2 k\left(1+\frac 2\delta\right)d\delta \\
+&= u + k(2-u+2(\log 2-\log u)) \\
+&= u+k\left(2-u+2\log{\frac{1-k}k}\right)
+\end{align*}
+
+Of course, this bound is likely to be horribly loose.
+
+\subsection{Another Example (Likely to be Deleted)}
+
+Here I give a specific example of finding an optimal $\epsilon$ using Markov's and Chebyshev's Inequalities. This may be useful when the edge weights are unbounded, since most other tail bounds that I know of require the random variables to be within a finite range. Let $\sigma_i^2=\Var{x_i}$.
+
+\begin{align*}
+\p{Y\geq\delta} &\leq 1-\left(1-\p{|\hat S|>\epsilon\overline S}\right)\left(1-\p{\|\hat x\|_1\geq(\delta-\epsilon-\delta\epsilon)\overline S\right)} \\
+&\leq 1 - \left(1-\frac{\sum_i \sigma_i^2}{\epsilon^2 \overline S^2}\right) \left(1-\frac{\sum_i \sigma_i}{(\delta-\epsilon-\delta\epsilon)\overline S} \right) \\
+\end{align*}
+
+Wolfram Alpha wouldn't give me the optimum value of that expression, so I suspect its obtained by taking the limit as $\epsilon$ approaches 0, with the result that $\p{Y\geq\delta} \leq \frac{\sum_i\sigma_i}{\overline S\delta}$. Or maybe it's the limit in the other direction? Now I'll try again, using Cantelli instead of Markov. First, note that.
+
+\begin{align*}
+\p{\|\hat x\|_1 \geq (\delta-\epsilon-\delta\epsilon)\overline S} &= \p{\|\hat x\|-\E{\|\hat x\|}\geq \ldots-\E{\|\hat x\|}} \\
+&\leq \frac{\sum_i \sigma_i^2}{(\sum_i \sigma_i^2) + \left((\delta-\epsilon-\delta\epsilon)\overline S - \E{\|\hat x\|}\right)^2} \\
+&\leq \frac{\sum_i \sigma_i^2}{(\sum_i \sigma_i^2) + \left((\delta-\epsilon-\delta\epsilon)\overline S - \sum_i \sigma_i \right)^2}
+\end{align*}
+
+Now,
+\begin{align*}
+\p{Y\geq\delta} &\leq 1-\left(1-\p{|\hat S|>\epsilon\overline S}\right)\left(1-\p{\|\hat x\|_1\geq(\delta-\epsilon-\delta\epsilon)\overline S\right)} \\
+&\leq 1 - \left(1-\frac{\sum_i \sigma_i^2}{\epsilon^2 \overline S^2}\right) \frac{\left((\delta-\epsilon-\delta\epsilon)\overline S - \sum_i \sigma_i \right)^2}{(\sum_i \sigma_i^2) + \left((\delta-\epsilon-\delta\epsilon)\overline S - \sum_i \sigma_i \right)^2}
+\end{align*}
+
+This also does not look like fun to optimize. Also, the bound is only valid for $\lambda > 0$, whatever that means in this context.
+
+\section{Bounding the Tail Probability of the Error in the PageRank Vector}
+
+The trouble with with random linear system bounds so far is that they don't consider the right hand side of the equation at all. Suppose we have the following equations:
+
+\begin{align*}
+(I-\alpha P)x &= (1-\alpha)v \\
+(I-\alpha P_o)x_o &= (1-\alpha)v
+\end{align*}
+
+where $P$ is random and $P_o=\overline A \overline D^{-1}$. Let $\hat x = x - x_o$. Then,
+
+\begin{align*}
+(I-\alpha P)x &= (I-\alpha P_o)x_o \\
+(I-\alpha P)\hat x &= ((I-\alpha P_o)-(I-\alpha P))x_o \\
+(I-\alpha P)\hat x &= \alpha(P-P_o)x_o
+\end{align*}
+
+The norm bound then yields $\|\hat x\| \leq \frac\alpha{1-\alpha} \|(P-P_o)x_o\| \leq \frac\alpha{1-\alpha}\sum_{j=1}^n \|(P-P_o)e_j\| x_{o,j}$. Unlike a bound that just depends on $\|P-P_o\|$, this bound will not be distracted by am unimportant node with relatively uncertain outgoing edges. Specifically, we have $\p{\|\hat x\|>\delta} \leq \p{\sum_{j=1}^n y_j x_{o,j} > \delta\frac{1-\alpha}{\alpha}}$, where $y_j = \|(P-P_o)e_j\|$. The variables $y_j(w)$ are independent if the columns of $A$ are independent, and $0\leq y_j\leq 2$, so we can use Bernstein here if we can effectively bound the $\overline y_j$.
+
+For example, by Hoeffding's Inequality (assuming $\delta\frac{1-\alpha}\alpha - \overline y \cdot x_o>0$),
+\begin{align*}
+\p{\|\hat x\| > \delta} &\leq \p{y\cdot x_o > \delta\frac{1-\alpha}{\alpha}} \\
+&= \p{\hat y \cdot x_o \leq \delta\frac{1-\alpha}\alpha - \overline y \cdot x_o} \\
+&\leq \exp\left(-2\left(\delta\frac{1-\alpha}\alpha - \overline y \cdot x_o\right)^2 \bigg/ \sum_{j=1}^n (2x_{o,j})^2 \right) \\
+\end{align*}
+
+We can replace $\overline y$ with an upper bound for it in this bound.
+
+Alternatively, since we could find $\E{e^{sy_i}}$ using similar methods that we used to find $\overline y_i$, we could try the following.
+
+Let $a=\E{\|\hat x\|_1}$, and $u=\frac{2a}{1-a}$.
+
+\begin{align*}
+\E{\exp(kY)} &= \int_{t=0}^{\exp(2k)} \p{\exp(kY)>t} dt \\
+&= \int_{t=0}^{\exp(2k)} \p{Y>\frac{\log t}k} dt \\
+&\leq \int_{t=0}^{\exp(2k)} \p{\|\hat x\|_1 > \frac{\log t}{2k+\log t}} dt \\
+&\leq \exp{\frac{2ka}{1-a}} + \int_{\exp\frac{2ka}{1-a}}^{\exp{2k}} a\frac{2k+\log t}{\log t} dt \\
+&= \exp \left(\frac{2ka}{1-a}\right) + a\left(\exp{2k}-\exp{\frac{2ka}{1-a}} + 2k\left(\li{\exp{2k}}-\li{\exp{\frac{2ka}{1-a}}}\right)\right)
+\end{align*}
+
+\begin{align*}
+\p{\sum_j y_jx_{o,j} >\delta} &= \p{\prod_j \exp(sy_jx_{o,j}) > \exp(s\delta)} \\
+&\leq \exp(-s\delta)\prod_j \E{\exp(sy_jx_{o,j})}
+\end{align*}
+
+\section{Another Attempt at the EV Problem}
+
+Let $X$ be one random edge weight, and $T$ be the sum of the others. $\E{\left|\frac{X}{X+T}-\overline x\right|}$ is less than the maximum of $\overline x$ and $\E{\frac{X}{X+T} \mid \frac{X}{X+T}>\overline x}-\overline x$.
+
+\begin{align*}
+\E{\frac{X}{X+T} \mid X\overline T > T\overline X} &= \E{\E{\frac{X}{X+T} | X\overline T>T\overline X \wedge X=x}} \\
+&= \E{\E{\frac{x}{x+T} \mid T<\frac{x\overline T}{\overline X}}} \\
+&= \E{\int_{s=0}^\infty \p{\frac{x}{x+T}>s \mid T<\frac{x\overline T}{\overline X}} ds} \\
+&= \E{\int_{s=0}^1 \p{T<\frac{x(1-s)}s \mid T<\frac{x\overline T}{\overline X}} ds} \\
+&= \E{\overline X + \int_{s=\overline X}^1 \p{T<\frac{x(1-s)}s \mid T<\frac{x\overline T}{\overline X}} ds} \\
+\end{align*}
+
+\section{Bounding the Expected Value of the 1-norm of the Normalized Error}
+
+Given a vector $y$ of positive random edge weights, we want to bound $\E{\sum_{i=1}^n \left|\frac {y_i} S - \frac{\overline y_i}{\overline S}\right|}$, which equals $\sum_{i=1}^n \E{\left|\frac {y_i} S - \frac{\overline y_i}{\overline S}\right|}$. Let $T_i=S-y_i$.
+
+\begin{align*}
+\E{\left|\frac{y_i}S - \frac{\overline y_i}{\overline S}\right|} &\leq \sqrt{\E{\left(\frac{y_i}S - \frac{\overline y_i}{\overline S}\right)^2}} \\
+&= \sqrt{\E{\frac{y_i^2}{S^2}} - 2\frac{\overline y_i}{\overline S}\E{\frac{y_i}S}+\frac{\overline y_i^2}{\overline S^2}}
+\end{align*}
+
+So we need an upper bound on $\E{\frac{y_i}S}$ and a lower bound on $\E{\frac{y_i^2}{S^2}}$. In deriving the first bound I use Jensen's Inequality. (If $g$ is a convex function, then $\E{g(x)}\geq g(\E{x})$.
+
+\begin{align*}
+\E{\frac{y_i}{y_i+T_i}} &= \E{\frac 1{1+\frac{T_i}{y_i}}} \\
+&= \E{\sum_{k=0}^\infty (-1)^k \frac{T_i^k}{y_i^k}} \\
+&= \sum_{k=0}^\infty (-1)^k \E{T_i^k}\E{y_i^{-k}} \\
+&\geq \sum_{k=0}^\infty (-1)^k \E{T_i}^k \E{y_i}^{-k} \\
+&= \frac{\overline y_i}{\overline S}
+\end{align*}
+
+I haven't found a lower bound on $\E{\frac{y_i^2}{S^2}}$. Here's one attempt: ($\E{y_i^2 S^{-2}} \leq \E{y_i^2} \E{S^{-2}}$).
+
+\begin{align*}
+\E{S^{-2}} &= \int_{t=0}^\infty \p{S^{-2}>t}dt \\
+&= \int_{t=0}^\infty \p{S>t^{-1/2}} dt \\
+\end{align*}
+
+Again:
+
+\begin{align*}
+\E{y^2 S^{-2}} &= \int_{t=0}^\infty \p{y^2 S^{-2} > t} dt \\
+&= \int_{t=0}^\infty \p{y>\sqrt t S} dt \\
+&= \int_{t=0}^\infty \p{\hat y - \sqrt t \hat S > -\overline y + (\sqrt t) \overline S} dt \\
+&\leq \int_{t=0}^\infty \frac{\Var y - \sqrt t \Var S}{\Var y - \sqrt t \Var S + \overline y^2 - 2\overline y\overline S\sqrt t + \overline S^2 t^2} dt
+%&= \int_{t=0}^\infty \E{\p{y>\sqrt t(y+T) \mid Y=y}} dt \\
+%&= \int_{t=0}^\infty \E{\p{T<y(1-\sqrt t) \mid Y=y}} dt \\
+\end{align*}
+
+Here's another thing I'd like to try, using Hoeffding's Inequality:
+
+\begin{align*}
+\E{S^{-1}} &= \int_{t=0}^\infty \p{\inv S > t} dt \\
+&= \int_{t=0}^\infty \p{S<\inv t} dt \\
+&\leq \inv{\overline S} + \int_{\inv{\overline S}}^\infty \p{\hat S<\inv t - \overline S} dt \\
+&= \inv{\overline S} + \int_{\inv{\overline S}}^\infty \left(\prod_{i=1}^n \p{x_i<\inv t}\right) \p{\hat S<\inv t-\overline S \mid \max_{i=1}^n x_i < \inv t} dt \\
+&\leq \inv{\overline S} + \int_{\inv{\overline S}}^\infty \left(\prod_{i=1}^n \p{x_i<\inv t}\right) \exp\left(\frac{-2(\overline S-\inv t)^2}{(n\inv t)^2)}\right) dt \\
+&= \inv{\overline S} + \int_{\inv{\overline S}}^\infty \left(\prod_{i=1}^n \p{x_i<\inv t}\right) \exp\left(\frac{-2(\overline S t - 1)^2}{n^2}\right) dt \\
+\end{align*}
+
+And one more attempt (assuming $\overline x < \overline T$):
+
+\begin{align*}
+\E{|x/S - \overline x|} &= \int_{t=0}^\infty \p{|x/S-\overline x|>t}dt \\
+&= \int_{t=0}^\infty \p{|\hat x\overline T - \hat T\overline x|>tS} dt \\
+&= \int_{t=0}^\infty \p{(x\overline T-T\overline x)^2>t^2(x+T)^2} dt \\
+&= \int_{t=0}^{\overline T} \p{x^2(\overline T^2-t^2) - 2xT(\overline x\overline T + t^2) + T^2(\overline x^2 - t^2) > 0} dt \\
+&= 
+\end{align*}
+
+Given positive constants $a,b,c$ and positive variables $x,y$, the minimum of $ax^2-bxy+cy^2$ over all $x,y$ can be computed as follows:
+
+\begin{align*}
+2ax-by &= 0 \\
+2cy-bx &= 0 \\
+\end{align*}
+
+%Insight at the Dock
+\section{Bounding $\E{\left\|A\inv D - \overline A\inv{\overline D}\right\|_1}$}
+
+Given a column of random nonnegative independent edge weights, let $x$ be one of them, let $T$ be the sum of the others, and assume $\E{x+T}=1$. Let $f(x,T)=\left|\frac{x}{x+T}-\overline x\right|$. The 1-norm of a column of $A\inv D - \overline A\inv{\overline D}$ is the sum of expressions of this form.
+
+Assume $\overline x < \frac 1 2$. Then $f(x,T)<1-\overline x$, so under any valid condition $Q$, $\E{f(x,T)\mid Q} \leq 1-\overline x$. Let $k=\frac{\overline x}{1-\overline x}$; $f$ is positive if and only if $x>kT$. Choose $\tau_l$ and $\tau_h$ such that $0<\tau_l<\overline T<\tau_h$. Then,
+
+\begin{equation*}
+\E{f} = \E{f\mid T>\tau_h}\p{T>\tau_h} + \E{f\mid T<\tau_l}\p{T<\tau_l} + \E{f\mid \tau_l<T<\tau_h}\p{\tau_l<T<\tau_h}
+\end{equation*}
+
+$\p{T>\tau_h}$ and $\p{T<\tau_l}$ can be bounded with Cantelli or other tail bounds, and $\p{\tau_l<T<\tau_h} \leq 1$. Now I examine the conditional expected values.
+
+\subsection{$\E{f\mid T>\tau_h}$}
+
+Assume $T>\tau_h$. If $x<  k\tau_h$, then $x<kT$, so $f$ is negative. Therefore $\E{f\mid T>\tau_h, x<k\tau_h} = \E{\overline x - \frac{x}{x+T} \mid \ldots} = \overline x - \E{\frac{x}{x+T}\mid\ldots} \leq \overline x$. Therefore,
+
+\begin{align*}
+\E{f\mid T>\tau_h} &= \E{f\mid T>\tau_h, x<k\tau_h}\p{x<k\tau_h} + \E{f\mid T>\tau_h, x>k\tau_h}\p{x>k\tau_h} \\
+&\leq \overline x + (1-\overline x)\p{x>\frac{\overline x}{1-\overline x}\tau_h}
+\end{align*}
+
+The latter probability is easily bounded with Markov or Cantelli.
+
+\subsection{$\E{f\mid T<\tau_l}$}
+
+Less than or equal to $1-\overline x$.
+
+%Assume $T<\tau_l$. If $x>k\tau_l$, then $x>kT$, so $f$ is positive. Therefore $\E{f\mid T<\tau_l, x>k\tau_l} = \E{\frac{x}{x+T}-\overline x \mid\ldots} = \E{\frac{x}{x+T}\mid\ldots} - \overline x < 1-\overline x$. Therefore, $\E{f\mid T<\tau_l} \leq 1-\overline x + (1+\overline x)\p{x<\frac{\overline x}{1-\overline x}\tau_l}$. The latter probability could be bounded with Cantelli. Depending on how good the bound is on $\p{x<k\tau_l}$, it may be better to simply bound $\E{f\mid T<\tau_l}$ by $1+\overline x$.
+
+\subsection{$\E{f\mid \tau_l<T<\tau_h}$}
+
+Assume $\tau_l<T<\tau_h$. If $x<k\tau_l$, then $x<kT$, so $f$ is negative. Therefore $\E{f\mid \tau_l<T<\tau_h, x<k\tau_l} = \E{\overline x - \frac{x}{x+T} \mid\ldots} = \overline x - \E{\frac{x}{x+T} \mid\ldots} \leq \overline x$. If $x>k\tau_h$, then $x>kT$, so $f$ is positive. Therefore $\E{f\mid \tau_l<T<\tau_h, x>k\tau_h} = \E{\frac{x}{x+T}-\overline x \mid\ldots} = \E{\frac{x}{x+T} \mid\ldots} - \overline x \leq 1-\overline x$. If $k\tau_l < x < k\tau_h$, then $\frac{k\tau_l}{k\tau_l + \tau_h}  \leq \frac{x}{x+T} \leq \frac{k\tau_h}{k\tau_h + \tau_l}$. Therefore,
+\begin{equation*}
+\E{f\mid \tau_l<T<\tau_h, k\tau_l<x<k\tau_h} \leq \max\left(\left|\frac{k\tau_l}{k\tau_l + \tau_h}-\overline x\right|, \left|\frac{k\tau_h}{k\tau_h + \tau_l}-\overline x\right|\right)
+\end{equation*}
+
+We can bound $\p{x<k\tau_l}$ and $\p{x>k\tau_h}$ with Cantelli, another bound, or 1, and we can bound $\p{k\tau_l<x<k\tau_h}$ with 1.
+
+\subsection{Putting it all together}
+
+TODO: Find the optimal $\tau_l$ and $\tau_h$. Maybe choose them so that the two operands of $\max$ are equal.
+
+%Actually, the maximum of f is 1-\overline x, assuming \overline x < 1/2
+
+\section{Modified Dock Insight, with Sequence of $\tau$}
+
+%http://www.wolframalpha.com/input/?i=solve+k%3Dx%2F%281-x%29%2C+k*h%2F%28k*h-l%29-x%3Dx-k*l%2F%28k*l-h%29+for+h
+
+Choose $\tau_1 > \overline T$. Choose $\tau_{-1}$ such that $\frac{k\tau_1}{k\tau_1+\tau_{-1}} - \overline x = \overline x - \frac{k\tau_{-1}}{k\tau_{-1}-\tau_1}$. Under most conditions, the solution is $h=-l$. (See wolfram Alpha link in the comments.) So forget about trying to make equal the absolute values.
+
+Construct sequences $\tau$ and $\chi$, in both directions, as I have in mind in my head and will spend the time to type if this idea works.
+
+%$\E{f} = \sum_{ 
+
+\section{Insight In Shower, July 23}
+
+%Or r could equal infinity
+Let $u$ be the 1-norm of a column of $A\inv D - \overline A\inv{\overline D}$. Let $r$ be a positive integer, and let $\tau_0,\ldots,\tau_{r+1}$ be an increasing sequence of real numbers such that $\tau_0=0$ and $\tau_{r+1} = 2$.
+
+\begin{align*}
+\E u &= \sum_{i=0}^r \p{\tau_i<u<\tau_{i+1}}\E{u\mid \tau_i<u<\tau_{i+1}} \\
+&\leq \sum_{i=0}^r \p{u>\tau_i}\tau_{i+1}
+\end{align*}
+
+We can bound $\p{u>\tau_i}$ using DSB's method.
+
+\section{Real attempt at Simple Sequence of $\tau$}
+
+%When I say $f$ is positive/negative, I'm really talking about the body of $f$. I should clean that up eventually. I also use $<$ and $\leq$ interchangeably.
+
+Given a column of random nonnegative independent edge weights, let $x$ be one of them, let $T$ be the sum of the others, and assume $\overline x + \overline T = 1$. Let $f(x,T)=\left|\frac{x}{x+T}-\overline x\right|$. The 1-norm of a column of $A\inv D - \overline A\inv{\overline D}$ is the sum of expressions of this form.
+
+I use $<$ and $\leq$ interchangeably throughout this section when dealing with probability distributions that are likely to be continuous. Assume $\overline x < \frac 1 2$. Then $f(x,T)<1-\overline x$, so under any valid condition $Q$, $\E{f(x,T)\mid Q} \leq 1-\overline x$. Let $k=\overline x / \overline T$, and note that $f$ is positive if and only if $x>kT$."
+
+Choose a positive integer $m$, and an increasing sequence of extended real numbers $\tau_0,\ldots,\tau_m$ such that $\tau_0=0$, $\tau_m=\infty$, and $\tau_i\neq\overline T$ for all $i$. Let $a$ be the integer such that $\tau_a<\overline T<\tau_{a+1}$. Multiplying through by $k$ shows that $k\tau_a<\overline x<k\tau_{a+1}$.
+
+The bound I derive is based on the following fact:
+
+\begin{equation*}
+\E f = \sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \p{\tau_i\leq T<\tau_{i+1}} \p{\tau_j \leq x/k < \tau_{j+1}} \E{f \mid \tau_i\leq T<\tau_{i+1}, \tau_j \leq x/k <\tau_{j+1}} \\
+\end{equation*}
+
+For $i<a$, $\p{\tau_i\leq T<\tau_{i+1}} \leq \p{T<\tau_{i+1}} = \p{\hat T < \tau_{i+1}-\overline T} \leq \frac{\Var T}{\Var T + (\tau_{i+1}-\overline T)^2}$. We can use a similar method to bound $\p{\tau_i\leq T\leq \tau_{i+1}}$ when $i>a$, and to bound $\p{\tau_j<x/k<\tau_{j+1}}$ when $j\neq a$. $\p{\tau_a<T<\tau_{a+1}}$ and $\p{\tau_a<x/k<\tau_{a+1}}$ are less than 1.
+
+Suppose $\tau_i\leq T\leq \tau_{i+1}$, and $\tau_j\leq x/k\leq \tau_{j+1}$. If $i>j$, then $T\geq\tau_i\geq\tau_{j+1}\geq x/k$, so $f$ is negative, so under these conditions, $\E f = \E{\overline x - \frac{x}{x+T}} \leq \overline x - \frac{k\tau_j}{k\tau_j + \tau_{i+1}}$. Alternatively, if $i<j$, then $T<\tau_{i+1}\leq\tau_j\leq x/k$, so $f$ is positive, so under these conditions, $\E f = \E{\frac{x}{x+T}-\overline x} \leq \frac{k\tau_{j+1}}{k\tau_{j+1}+\tau_i} - \overline x$. Finally, if $i=j$, then $\E f = \max\left(\frac{k\tau_{i+1}}{k\tau_{i+1}+\tau_i}-\overline x, \overline x - \frac{k\tau_i}{k\tau_i+\tau_{i+1}}\right)$. To make the bound easier to work with, I may use the fact that $\max\left(\frac{k\tau_{i+1}}{k\tau_{i+1}+\tau_i}-\overline x, \overline x - \frac{k\tau_i}{k\tau_i+\tau_{i+1}}\right) \leq \frac{k\tau_{i+1}}{k\tau_{i+1}+\tau_i} - \frac{k\tau_i}{k\tau_i+\tau_{i+1}}$; this will introduce an error of a factor less than 2.
+
+So, $\overline f$ is less than or equal to the following:
+
+\begin{equation*}
+\sum_{i=0}^{m-1}\sum_{j=0}^{m-1}
+\left(\begin{cases}
+	\frac{\Var T}{\Var T + (\tau_{i+1}-\overline T)^2} & \text{if $i<a$}\\
+	1 & \text{if $i=a$} \\
+	\frac{\Var T}{\Var T + (\tau_i-\overline T)^2} & \text{if $i>a$}
+\end{cases}\right)
+\left(\begin{cases}
+	\frac{\Var x}{\Var x + (k\tau_{j+1}-\overline x)^2} & \text{if $j<a$}\\
+	1 & \text{if $j=a$}\\
+	\frac{\Var x}{\Var x + (k\tau_j-\overline x)^2} & \text{if $j>a$}
+\end{cases}\right)
+\left(\begin{cases}
+	\frac{k\tau_{j+1}}{k\tau_{j+1}+\tau_i} - \overline x & \text{if $i<j$}\\
+	\frac{k\tau_{i+1}}{k\tau_{i+1}+\tau_i} - \frac{k\tau_i}{k\tau_i+\tau_{i+1}} & \text{if $i=j$}\\
+	\overline x - \frac{k\tau_j}{k\tau_j + \tau_{i+1}} & \text{if $i>j$}
+\end{cases}\right)
+\end{equation*}
+
+Given a fixed $m$, we want to find the values of $\tau_1,\ldots,\tau_{m-1}$ that optimize this expression, such that $\tau_1<\ldots<\tau_{m-1}$. And we want to optimize that over all possible $m$, including the limit as $m$ approaches infinity.
+
+Actually, in the above expression, I forgot about the endpoints. (I need to invoke the very weak bound there.)
+
+\section{Probability Lemmas}
+
+\begin{align*}
+\p{a<X<b} &= \p{\left|X-\frac{a+b}2\right|<\frac{a-b}2} \\
+&= \p{X^2-(a+b)X+(a+b)^2/4 < (a-b)^2/4} \\
+&\geq 1-\frac{\Var X - (a+b)\overline X + (a+b)^2/4}{(a-b)^2/4} \\
+&= \frac{(a-b)^2 - 4\Var X + 4(a+b)\overline X - (a+b)^2}{(a-b)^2} \\
+&= 4\frac{\Var X + (a+b)\overline X - ab}{(a-b)^2}
+\end{align*}
+
+Assume $0<X<k$.
+
+\begin{align*}
+\E X \leq \sum_{i=0}^{k/\epsilon} \frac{\Var X + \overline X(2i+1)\epsilon-4i(i+1)\epsilon^2}{\epsilon^2}
+\end{align*}
+
+\section{Thing}
+
+\begin{align*}
+\E{e^{s|\hat x_i|} \mid |\hat x_i|<m} &= \int_{t=0}^\infty \p{e^{s|\hat x_i|}>t \mid |\hat x_i|<m} dt\\ 
+&= \int_{t=0}^\infty \p{|\hat x_i|>\frac 1 s \log(t) \mid |\hat x_i|<m} dt\\ 
+&= \left(\int_{t=0}^{e^{sm}} \p{\frac 1 s \log(t) < |\hat x_i| < m} dt \right)\bigg/\p{|\hat x_i| < m} \\
+&\leq \left(\int_{t=0}^{e^{sm}} \p{\frac 1 s \log(t) < |\hat x_i|} dt \right)\bigg/\p{|\hat x_i| < m} \\
+&= \left(\int_{t=0}^{e^{sm}} \p{\left(\frac {\log(t)} s\right)^2 < \hat x_i^2} dt \right)\bigg/\p{|\hat x_i| < m} \\
+&\leq \frac{e^{s \sigma_i} + \int_{t=\exp(s\sigma_i)}^{\exp(sm)} \left(\frac{\sigma_i s}{\log t}\right)^2 dt}{1-\sigma_i^2/m^2} \\
+&= \frac{e^{s \sigma_i} + \sigma_i^2 s^2 \int_{t=\exp(s\sigma_i)}^{\exp(sm)} (\log t)^{-2} dt}{1-\sigma_i^2/m^2} \\
+&= \frac{e^{s \sigma_i} + \sigma_i^2 s^2 \left(\li(\exp(sm))-\frac{\exp(sm)}{sm}-\li(\exp(s\sigma_i)) +\frac{\exp(s\sigma_i)}{s\sigma_i} \right)}{1-\sigma_i^2/m^2} \\
+\end{align*}
+
+\section{Eurkea EV Insight, 1am, July 29}
+
+Assume $\overline S = 1$.
+
+\begin{align*}
+\overline Y &= \int_{\delta=0}^2 \p{Y>\delta} d\delta \\
+&\leq \int_{\delta=0}^2 \p{\|\hat x\|>\frac\delta{2+\delta}} d\delta \\
+&\leq \int_{\delta=0}^2 \p{\|\hat x\| > \frac\delta 4} d\delta \\
+&= 4 \int_{\delta/4 = 0}^{1/2} \p{\|\hat x\| > \frac \delta 4} d\frac\delta 4 \\
+&\leq 4 \int_{\delta/4=0}^\infty \p{\|\hat x\| > \frac \delta 4} d\frac\delta 4 \\
+&= 4\E{\|\hat x\|}
+\end{align*}
+
+Let $u=\|\hat x\|$, let $f$ be the probability density function of $u$, and let $F$ be the cumulative distribution function of $u$.
+\begin{align*}
+\int_{\delta=0}^2 \p{\frac \delta 4 < u < \frac \delta {2+\delta}} d\delta &= \int_{\delta=0}^2 \int_{u=\delta/4}^{\delta/(2+\delta)} f(u) d\delta \\
+&= \int_{u=0}^{1/2} \int_{\delta=2u/(1-u)}^{4u} f(u) du \\
+&= \int_{u=0}^{1/2} \left(4u-\frac{2u}{1-u}\right) f(u) du \\
+&= \left[\left(4u-\frac{2u}{1-u}\right)F(u)\right]_{u=0}^{u=1/2} - \int_{u=0}^{1/2} F(u)\left(4-\frac{2}{(1-u)^2}\right) du \\
+&= \int_{u=0}^{1/2} \left(\frac{2}{(1-u)^2}-4\right)F(u) du
+\end{align*}
+
+Now, letting $p=\p{u<k}$ for some $k$,
+\begin{align*}
+\overline u &\leq pk+(1-p)2 \\
+\overline u &\leq p(k-2) + 2 \\
+\frac{\overline u - 2}{k-2} &>p \\
+\end{align*}
+
+So $F(u)<\frac{2-\overline u}{2-u}$. Or I could use truncated Bernstein to bound $F(u)$, depending on $\overline u$.
+
+Actually, I forgot about another term. Let me try again.
+\begin{align*}
+&\int_{\delta=0}^2 \p{\frac \delta 4 < u < \frac \delta {2+\delta}}d\delta + 4\int_{\delta=1/2}^\infty \p{u>\delta}d\delta \\
+&= \int_{u=0}^{1/2} \left(4u-\frac{2u}{1-u}\right) f(u) du + 4\int_{u=1/2}^\infty (u-1/2)f(u) du \\
+&= 4\overline u - 2\int_{u=0}^{1/2} \frac{u}{1-u}f(u)du - 2\int_{u=1/2}^\infty f(u) du \\
+&= 4\overline u -2\left( \int_{u=0}^{1/2} f(u)du + \int_{u=0}^{1/2} \frac{2u-1}{1-u}f(u)du + \int_{u=1/2}^\infty f(u)du \right) \\
+&= 4\overline u - 2 + 2\int_{u=0}^{1/2} \frac{1-2u}{1-u} f(u) du
+\end{align*}
+
+So I want a lower bound on $\int_{u=0}^{1/2} \frac{1-2u}{1-u} f(u) du$. It's greater than $\int_{u=0}^{1/2} (1-2u)f(u)du$.
+
+Here's another fresh attempt.
+\begin{align*}
+\overline Y &\leq \int_{\delta=0}^2 \int_{u=\delta/(2+\delta)}^\infty f(u) du d\delta \\
+&= \int_{u=0}^{1/2} \frac{2u}{1-u} f(u) du + \int_{u=1/2}^\infty 2f(u) du \\
+&= 2 - 2\int_{u=0}^{1/2} \left(1-\frac{u}{1-u}\right)f(u)du \\
+&\leq 2 - 2\int_{u=0}^{1/2} (1-2u)f(u)du \\
+%&= 2 - 2\p{u<1/2} + \int_{u=0}^{1/2} uf(u) du \\
+%&= 2-2\p{u<1/2} + 4\int_{u=0}^{1/2} \p{\|\hat x\|>u} du - 2\p{\|\hat x\|>1/2}
+\end{align*}
+
+%I don't know about the two commented out lines.
+
+I want to minimize $\int_{u=0}^{1/2} \frac{1-2u}{1-u} f(u) du$ over all probability distributions $f$ with support in the positive real numbers, mean $\mu$, and variance $\sigma^2$.
+
 \end{document}
